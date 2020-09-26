@@ -167,26 +167,17 @@ namespace BudgetCalculators
                 var allAmount = 0;
                 foreach (var monthBudget in searchBudgetResult)
                 {
-                    var year = getBudgetYear(monthBudget);
-                    var month = getBudgetMonth(monthBudget);
-                    DateTime monthStart = new DateTime(year, month, 1);;
-                    DateTime monthEnd = new DateTime(year, month, DateTime.DaysInMonth(year, month));;
+                    DateTime monthStart = new DateTime(getBudgetYear(monthBudget), getBudgetMonth(monthBudget), 1);;
+                    DateTime monthEnd = new DateTime(getBudgetYear(monthBudget), getBudgetMonth(monthBudget), DateTime.DaysInMonth(getBudgetYear(monthBudget), getBudgetMonth(monthBudget)));;
 
-                    if (start.Year == end.Year && start.Month == end.Month)
+                    if (monthBudget.YearMonth == start.ToString("yyyyMM"))
                     {
                         monthStart = start;
-                        monthEnd = end;
                     }
-                    else
+                    
+                    if (monthBudget.YearMonth == end.ToString("yyyyMM"))
                     {
-                        if (monthBudget.YearMonth == start.ToString("yyyyMM"))
-                        {
-                            monthStart = start;
-                        }
-                        else if (monthBudget.YearMonth == end.ToString("yyyyMM"))
-                        {
-                            monthEnd = end;
-                        }
+                        monthEnd = end;
                     }
 
                     var daydiff = (monthEnd - monthStart).Days + 1;
