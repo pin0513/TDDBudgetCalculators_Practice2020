@@ -172,26 +172,18 @@ namespace BudgetCalculators
                     var year = getBudgetYear(monthBudget);
                     var month = getBudgetMonth(monthBudget);
 
-                    if (start.Year == end.Year && start.Month == end.Month)
+                    if (IsNotSameYearMonth(start, end))
                     {
-                        monthStart = start;
-                        monthEnd = end;
-                    }
-                    else
-                    {
-                        
+                                                
                         if (monthBudget.YearMonth == startYearMonth.ToString() )
                         {
-                            monthStart = start;
                             monthEnd = new DateTime(year, month, DateTime.DaysInMonth(start.Year, start.Month));
                         }
-
-                        if (monthBudget.YearMonth == endYearMonth.ToString())
+                        else if (monthBudget.YearMonth == endYearMonth.ToString())
                         {
                             monthStart = new DateTime(year, month, 1);
-                            monthEnd = end;
                         }
-                        if (monthBudget.YearMonth != startYearMonth.ToString() &&
+                        else if (monthBudget.YearMonth != startYearMonth.ToString() &&
                             monthBudget.YearMonth != endYearMonth.ToString())
                         {
                             monthStart = new DateTime(year, month, 1);
@@ -201,13 +193,23 @@ namespace BudgetCalculators
 
                     var daydiff = (monthEnd - monthStart).Days + 1;
 
-                    allAmount += monthBudget.Amount / DateTime.DaysInMonth(monthStart.Year, monthStart.Month) * daydiff;
+                    allAmount += DailyAmount(monthBudget, monthStart) * daydiff;
 
                 }
 
                 return allAmount;
             }
 
+        }
+
+        private static int DailyAmount(Budget monthBudget, DateTime monthStart)
+        {
+            return monthBudget.Amount / DateTime.DaysInMonth(monthStart.Year, monthStart.Month);
+        }
+
+        private static bool IsNotSameYearMonth(DateTime start, DateTime end)
+        {
+            return start.Year != end.Year || start.Month != end.Month;
         }
 
         private static int getBudgetMonth(Budget monthBudget)
