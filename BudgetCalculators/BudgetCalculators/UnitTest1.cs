@@ -52,7 +52,7 @@ namespace BudgetCalculators
             BudgetService bc = new BudgetService(repo);
             var amount = bc.Query(new DateTime(2020, 1, 1), new DateTime(2020, 1, 2));
             Assert.AreEqual(amount, 20);
-        }        
+        }
 
         [TestMethod]
         public void TwoDayInOneMonthBudget2()
@@ -60,8 +60,8 @@ namespace BudgetCalculators
             BudgetService bc = new BudgetService(repo);
             var amount = bc.Query(new DateTime(2020, 1, 2), new DateTime(2020, 1, 3));
             Assert.AreEqual(amount, 20);
-        }  
-        
+        }
+
         [TestMethod]
         public void TwoMonthBudget()
         {
@@ -87,7 +87,7 @@ namespace BudgetCalculators
         }
 
 
-        
+
         [TestMethod]
         public void LargeSearchDatetime()
         {
@@ -155,7 +155,7 @@ namespace BudgetCalculators
 
             var startYearMonth = Convert.ToInt32(start.ToString("yyyyMM"));
             var endYearMonth = Convert.ToInt32(end.ToString("yyyyMM"));
-            var searchBudgetResult = _repo.getAll().Where(x => startYearMonth <= Convert.ToInt32(x.YearMonth) 
+            var searchBudgetResult = _repo.getAll().Where(x => startYearMonth <= Convert.ToInt32(x.YearMonth)
                                                    && Convert.ToInt32(x.YearMonth) <= endYearMonth).ToList();
 
             if (!searchBudgetResult.Any())
@@ -167,23 +167,9 @@ namespace BudgetCalculators
                 var allAmount = 0;
                 foreach (var monthBudget in searchBudgetResult)
                 {
-                    DateTime monthStart = new DateTime(getBudgetYear(monthBudget), getBudgetMonth(monthBudget), 1);;
-                    DateTime monthEnd = new DateTime(getBudgetYear(monthBudget), getBudgetMonth(monthBudget), DateTime.DaysInMonth(getBudgetYear(monthBudget), getBudgetMonth(monthBudget)));;
-
-                    if (monthBudget.YearMonth == start.ToString("yyyyMM"))
-                    {
-                        monthStart = start;
-                    }
-                    
-                    if (monthBudget.YearMonth == end.ToString("yyyyMM"))
-                    {
-                        monthEnd = end;
-                    }
-
-                    var daydiff = (monthEnd - monthStart).Days + 1;
-
-                    allAmount += DailyAmount(monthBudget, monthStart) * daydiff;
-
+                    var monthStart = monthBudget.YearMonth == start.ToString("yyyyMM") ? start : getMonthFirstDay(monthBudget);
+                    var monthEnd = monthBudget.YearMonth == end.ToString("yyyyMM") ? end : getMonthEndDay(monthBudget);
+                    allAmount += getMonthAmount(monthBudget, monthStart, monthEnd);
                 }
 
                 return allAmount;
@@ -191,12 +177,32 @@ namespace BudgetCalculators
 
         }
 
+        private static DateTime getMonthEndDay(Budget monthBudget)
+        {
+            return new DateTime(getBudgetYear(monthBudget), getBudgetMonth(monthBudget), DateTime.DaysInMonth(getBudgetYear(monthBudget), getBudgetMonth(monthBudget)));
+        }
+
+        private static DateTime getMonthFirstDay(Budget monthBudget)
+        {
+            return new DateTime(getBudgetYear(monthBudget), getBudgetMonth(monthBudget), 1);
+        }
+
+        private static int getMonthAmount(Budget monthBudget, DateTime monthStart, DateTime monthEnd)
+        {
+            return DailyAmount(monthBudget, monthStart) * getDiffDays(monthEnd, monthStart);
+        }
+
+        private static int getDiffDays(DateTime monthEnd, DateTime monthStart)
+        {
+            return ((monthEnd - monthStart).Days + 1);
+        }
+
         private static int DailyAmount(Budget monthBudget, DateTime monthStart)
         {
             return monthBudget.Amount / DateTime.DaysInMonth(monthStart.Year, monthStart.Month);
         }
 
- 
+
         private static int getBudgetMonth(Budget monthBudget)
         {
             return Convert.ToInt32(monthBudget.YearMonth.Substring(4, 2));
